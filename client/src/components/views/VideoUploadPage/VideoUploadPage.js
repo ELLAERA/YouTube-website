@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Typography, Button, Form, message, Input, Icon } from 'antd';
 import Dropzone from 'react-dropzone';
+import Axios from 'axios';
 
 const { TextArea } = Input;
 const { Title } = Typography;
@@ -24,6 +25,7 @@ function VideoUploadPage(){
     const [Description, setDescription] = useState("");
     const [Private, setPrivate] = useState(0); 
     const [Category, setCategory] = useState("Film & Animation"); 
+    const [FilePath, setFilePath] = useState("")
 
     const onTitleChange = (e) => {
         setVideoTitle(e.currentTarget.value)
@@ -41,25 +43,54 @@ function VideoUploadPage(){
         setCategory(e.currentTarget.value)
     } 
 
+    const onSubmit = () => {
+    }
 
+    const onDrop = ( files ) => {
+
+        let formData = new FormData();
+        const config = {
+            header: { 'content-type': 'multipart/form-data' }
+        }
+        console.log(files)
+        formData.append("file", files[0])
+
+        Axios.post('/api/video/uploadfiles', formData, config)
+        .then(response=> {
+            if(response.data.success){
+
+                let variable = {
+                    filePath: response.data.filePath,
+                    fileName: response.data.fileName
+                }
+                setFilePath(response.data.filePath)
+
+                //gerenate thumbnail with this filepath ! 
+
+            } else {
+                alert('failed to save the video in server')
+            }
+        })
+
+    }
     return (
         <div style={{ maxWidth: '700px', margin: '2rem auto' }}>
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     <Title level={2} > Upload Video</Title>
                 </div>
 
-                <Form onSubmit>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Form onSubmit={onSubmit}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
 
                         {/* Drop zone */}
-                        <Dropzone
-                            onDrop 
-                            multiple
-                            maxSize
-                        >
+                        <Dropzone 
+                            onDrop={onDrop}
+                            multiple={false}
+                            maxSize={800000000}>
                             {({ getRootProps, getInputProps }) => (
                                 <div style={{ width: '300px', height: '240px', border: '1px solid lightgray', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                    {...getRootProps()}>
+                                    {...getRootProps()}
+                                >
                                     <input {...getInputProps()} />
                                     <Icon type="plus" style={{ fontSize: '3rem' }} />
                                 </div>
@@ -68,7 +99,7 @@ function VideoUploadPage(){
 
                         {/* Thumbnail */}
                         <div>
-                           <img src alt/> 
+                            
                         </div>
                 </div>
 
@@ -109,7 +140,7 @@ function VideoUploadPage(){
 
                 <br />
                 <br />
-                <Button type='primary' size='large' onClick>
+                <Button type='primary' size='large' onClick={onsubmit}>
                     Submit
                 </Button>
 
